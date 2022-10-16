@@ -16,7 +16,7 @@ impl Triangle {
     pub fn normal(&self) -> Vector3<f64> {
         (self.b - self.a).cross(&(self.c - self.a))
     }
-
+    
     pub fn intersect_ray(
         &self,
         l0: Vector3<f64>,
@@ -51,7 +51,6 @@ impl Triangle {
                 None
             }
         } else {
-            println!("no");
             None
         }
     }
