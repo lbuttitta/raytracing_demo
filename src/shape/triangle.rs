@@ -1,8 +1,7 @@
-use ::nalgebra::{
-    Matrix3x2,
-    Vector3
-};
-use ::pixels::wgpu::Color;
+use ::nalgebra::Matrix3x2;
+use ::nalgebra::Vector3;
+use crate::Color;
+use crate::shape::Shape;
 
 #[derive(Copy, Clone, PartialEq)]
 pub struct Triangle {
@@ -16,8 +15,14 @@ impl Triangle {
     pub fn normal(&self) -> Vector3<f64> {
         (self.b - self.a).cross(&(self.c - self.a))
     }
-    
-    pub fn intersect_ray(
+}
+
+impl Shape for Triangle {
+    fn color_at(&self, _p: Vector3<f64>) -> Color {
+        self.color
+    }
+
+    fn intersect_ray(
         &self,
         l0: Vector3<f64>,
         l: Vector3<f64>,
@@ -34,9 +39,9 @@ impl Triangle {
         if k < 0.0 {
             return None
         }
-        // the intersection between the line and the plane
+        // the intersection between the line and the coplanar plane
         let p = l0 + k * l;
-        // transforms from Cartesian to barycentric coordinates
+        // a transformation matrix from Cartesian to barycentric coordinates
         let m = Matrix3x2::from_columns(&[
             self.b - self.a,
             self.c - self.a
