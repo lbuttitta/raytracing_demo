@@ -24,6 +24,7 @@ use self::raster::rasterize_into;
 use self::render::NaiveRenderer;
 use self::scene::Camera;
 use self::scene::Scene;
+use self::shape::CachedTriangle;
 use self::shape::Triangle;
 
 const WIDTH: u32 = 800;
@@ -61,54 +62,54 @@ fn main() -> Result<()> {
             up:  Vector3::new(0.0, 1.0, 0.0),
         },
         shapes: vec![
-            Box::new(Triangle {
+            Box::new(CachedTriangle::new(Triangle {
                 a: Vector3::new(1.0, 1.0, 0.0),
                 b: Vector3::new(-1.0, 1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, 1.0),
                 color: Color::BLACK
-            }),
-            Box::new(Triangle {
+            }).unwrap()),
+            Box::new(CachedTriangle::new(Triangle {
                 a: Vector3::new(-1.0, 1.0, 0.0),
                 b: Vector3::new(-1.0, -1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, 1.0),
                 color: Color::RED
-            }),
-            Box::new(Triangle {
+            }).unwrap()),
+            Box::new(CachedTriangle::new(Triangle {
                 a: Vector3::new(-1.0, -1.0, 0.0),
                 b: Vector3::new(1.0, -1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, 1.0),
                 color: Color::GREEN
-            }),
-            Box::new(Triangle {
+            }).unwrap()),
+            Box::new(CachedTriangle::new(Triangle {
                 a: Vector3::new(-1.0, 1.0, 0.0),
                 b: Vector3::new(-1.0, -1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, -1.0),
                 color: Color::YELLOW
-            }),
-            Box::new(Triangle {
+            }).unwrap()),
+            Box::new(CachedTriangle::new(Triangle {
                 a: Vector3::new(1.0, -1.0, 0.0),
                 b: Vector3::new(1.0, 1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, 1.0),
                 color: Color::BLUE
-            }),
-            Box::new(Triangle {
+            }).unwrap()),
+            Box::new(CachedTriangle::new(Triangle {
                 a: Vector3::new(1.0, 1.0, 0.0),
                 b: Vector3::new(-1.0, 1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, -1.0),
                 color: Color::MAGENTA
-            }),
-            Box::new(Triangle {
+            }).unwrap()),
+            Box::new(CachedTriangle::new(Triangle {
                 a: Vector3::new(1.0, -1.0, 0.0),
                 b: Vector3::new(1.0, 1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, -1.0),
                 color: Color::CYAN
-            }),
-            Box::new(Triangle {
+            }).unwrap()),
+            Box::new(CachedTriangle::new(Triangle {
                 a: Vector3::new(-1.0, -1.0, 0.0),
                 b: Vector3::new(1.0, -1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, -1.0),
                 color: Color::WHITE
-            })
+            }).unwrap())
         ]
     };
     
