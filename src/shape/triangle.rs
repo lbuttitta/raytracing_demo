@@ -1,4 +1,4 @@
-use ::nalgebra::Matrix3x2;
+use ::nalgebra::Matrix3;
 use ::nalgebra::Vector3;
 use crate::Color;
 use crate::shape::Shape;
@@ -41,12 +41,14 @@ impl Shape for Triangle {
         }
         // the intersection between the line and the coplanar plane
         let p = l0 + k * l;
-        // a transformation matrix from Cartesian to barycentric coordinates
-        let m = Matrix3x2::from_columns(&[
+        // a transformation matrix from barycentric to Cartesian coordinates
+        let mut m = Matrix3::from_columns(&[
             self.b - self.a,
-            self.c - self.a
-        ]).pseudo_inverse(0.0);
-        if let Ok(m) = m {
+            self.c - self.a,
+            n
+        ]);
+        // invert it to obtain a transformation from Cartesian to barycentric
+        if m.try_inverse_mut() {
             let q = m * (p - self.a);
             let (v, w) = (q[0], q[1]);
             // if p is contained in the triangle
