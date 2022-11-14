@@ -1,0 +1,13 @@
+[package]
+name = "example_rt"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.66"
+nalgebra = "0.31.4"
+pixels = "0.10.0"
+rayon = "1.5.3"
+raytracing = { path = "../raytracing/" }
+time = "0.3.17"
+winit = "0.27.5"

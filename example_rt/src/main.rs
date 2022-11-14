@@ -1,16 +1,16 @@
-#![feature(never_type)]
-mod color;
-pub mod raster;
-pub mod render;
-pub mod scene;
-pub mod shape;
-
 use ::anyhow::Result;
 use ::nalgebra::Vector3;
 use ::pixels::Pixels;
 use ::pixels::SurfaceTexture;
 use ::rayon::iter::ParallelIterator;
 use ::rayon::slice::ParallelSliceMut;
+use ::raytracing::Color;
+use ::raytracing::rasterize_into;
+use ::raytracing::render::NaiveRenderer;
+use ::raytracing::scene::Camera;
+use ::raytracing::scene::Scene;
+use ::raytracing::shape::CachingTriangle;
+use ::raytracing::shape::Triangle;
 use ::std::f64::consts::PI;
 use ::time::Instant;
 use ::winit::dpi::PhysicalSize;
@@ -19,13 +19,6 @@ use ::winit::event::WindowEvent;
 use ::winit::event_loop::ControlFlow;
 use ::winit::event_loop::EventLoop;
 use ::winit::window::WindowBuilder;
-use self::color::Color;
-use self::raster::rasterize_into;
-use self::render::NaiveRenderer;
-use self::scene::Camera;
-use self::scene::Scene;
-use self::shape::CachedTriangle;
-use self::shape::Triangle;
 
 const WIDTH: u32 = 800;
 const HEIGHT: u32 = 600;
@@ -55,56 +48,56 @@ fn main() -> Result<()> {
 
     // create a scene and a renderer for it
     let mut scene = Scene {
-        bg: Color { r: 63, g: 63, b: 63 },
+        bg: Color::BLACK,
         camera: Camera {
             pos: Vector3::new(0.0, 0.0, 8.0),
             forward: Vector3::new(0.0, 0.0, -1.0),
             up:  Vector3::new(0.0, 1.0, 0.0),
         },
         shapes: vec![
-            Box::new(CachedTriangle::new(Triangle {
+            Box::new(CachingTriangle::new(Triangle {
                 a: Vector3::new(1.0, 1.0, 0.0),
                 b: Vector3::new(-1.0, 1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, 1.0),
                 color: Color::BLACK
             }).unwrap()),
-            Box::new(CachedTriangle::new(Triangle {
+            Box::new(CachingTriangle::new(Triangle {
                 a: Vector3::new(-1.0, 1.0, 0.0),
                 b: Vector3::new(-1.0, -1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, 1.0),
                 color: Color::RED
             }).unwrap()),
-            Box::new(CachedTriangle::new(Triangle {
+            Box::new(CachingTriangle::new(Triangle {
                 a: Vector3::new(-1.0, -1.0, 0.0),
                 b: Vector3::new(1.0, -1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, 1.0),
                 color: Color::GREEN
             }).unwrap()),
-            Box::new(CachedTriangle::new(Triangle {
+            Box::new(CachingTriangle::new(Triangle {
                 a: Vector3::new(-1.0, 1.0, 0.0),
                 b: Vector3::new(-1.0, -1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, -1.0),
                 color: Color::YELLOW
             }).unwrap()),
-            Box::new(CachedTriangle::new(Triangle {
+            Box::new(CachingTriangle::new(Triangle {
                 a: Vector3::new(1.0, -1.0, 0.0),
                 b: Vector3::new(1.0, 1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, 1.0),
                 color: Color::BLUE
             }).unwrap()),
-            Box::new(CachedTriangle::new(Triangle {
+            Box::new(CachingTriangle::new(Triangle {
                 a: Vector3::new(1.0, 1.0, 0.0),
                 b: Vector3::new(-1.0, 1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, -1.0),
                 color: Color::MAGENTA
             }).unwrap()),
-            Box::new(CachedTriangle::new(Triangle {
+            Box::new(CachingTriangle::new(Triangle {
                 a: Vector3::new(1.0, -1.0, 0.0),
                 b: Vector3::new(1.0, 1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, -1.0),
                 color: Color::CYAN
             }).unwrap()),
-            Box::new(CachedTriangle::new(Triangle {
+            Box::new(CachingTriangle::new(Triangle {
                 a: Vector3::new(-1.0, -1.0, 0.0),
                 b: Vector3::new(1.0, -1.0, 0.0),
                 c: Vector3::new(0.0, 0.0, -1.0),
@@ -130,11 +123,10 @@ fn main() -> Result<()> {
                 }
                 // create a new renderer for the updated scene
                 let renderer = NaiveRenderer::new(&scene);
-                // is there some way of using the ? operator here?
                 rasterize_into(
                     &renderer,
                     pixels
-                        .get_frame()
+                        .get_frame_mut()
                         .par_chunks_exact_mut(4)
                         // convert the [u8] slices into [u8; 4] arrays
                         .map(|pixel| {
