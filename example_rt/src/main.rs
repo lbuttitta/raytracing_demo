@@ -8,9 +8,9 @@ use ::raytracing::Color;
 use ::raytracing::rasterize_into;
 use ::raytracing::render::NaiveRenderer;
 use ::raytracing::scene::Camera;
+use ::raytracing::scene::Light;
 use ::raytracing::scene::Scene;
-use ::raytracing::shape::CachingTriangle;
-use ::raytracing::shape::Triangle;
+use ::raytracing::shape::Sphere;
 use ::std::f64::consts::PI;
 use ::time::Instant;
 use ::winit::dpi::PhysicalSize;
@@ -50,59 +50,22 @@ fn main() -> Result<()> {
     let mut scene = Scene {
         bg: Color::BLACK,
         camera: Camera {
-            pos: Vector3::new(0.0, 0.0, 8.0),
+            pos: Vector3::new(0.0, 0.0, 4.0),
             forward: Vector3::new(0.0, 0.0, -1.0),
             up:  Vector3::new(0.0, 1.0, 0.0),
         },
         shapes: vec![
-            Box::new(CachingTriangle::new(Triangle {
-                a: Vector3::new(1.0, 1.0, 0.0),
-                b: Vector3::new(-1.0, 1.0, 0.0),
-                c: Vector3::new(0.0, 0.0, 1.0),
-                color: Color::BLACK
-            }).unwrap()),
-            Box::new(CachingTriangle::new(Triangle {
-                a: Vector3::new(-1.0, 1.0, 0.0),
-                b: Vector3::new(-1.0, -1.0, 0.0),
-                c: Vector3::new(0.0, 0.0, 1.0),
-                color: Color::RED
-            }).unwrap()),
-            Box::new(CachingTriangle::new(Triangle {
-                a: Vector3::new(-1.0, -1.0, 0.0),
-                b: Vector3::new(1.0, -1.0, 0.0),
-                c: Vector3::new(0.0, 0.0, 1.0),
-                color: Color::GREEN
-            }).unwrap()),
-            Box::new(CachingTriangle::new(Triangle {
-                a: Vector3::new(-1.0, 1.0, 0.0),
-                b: Vector3::new(-1.0, -1.0, 0.0),
-                c: Vector3::new(0.0, 0.0, -1.0),
-                color: Color::YELLOW
-            }).unwrap()),
-            Box::new(CachingTriangle::new(Triangle {
-                a: Vector3::new(1.0, -1.0, 0.0),
-                b: Vector3::new(1.0, 1.0, 0.0),
-                c: Vector3::new(0.0, 0.0, 1.0),
-                color: Color::BLUE
-            }).unwrap()),
-            Box::new(CachingTriangle::new(Triangle {
-                a: Vector3::new(1.0, 1.0, 0.0),
-                b: Vector3::new(-1.0, 1.0, 0.0),
-                c: Vector3::new(0.0, 0.0, -1.0),
-                color: Color::MAGENTA
-            }).unwrap()),
-            Box::new(CachingTriangle::new(Triangle {
-                a: Vector3::new(1.0, -1.0, 0.0),
-                b: Vector3::new(1.0, 1.0, 0.0),
-                c: Vector3::new(0.0, 0.0, -1.0),
-                color: Color::CYAN
-            }).unwrap()),
-            Box::new(CachingTriangle::new(Triangle {
-                a: Vector3::new(-1.0, -1.0, 0.0),
-                b: Vector3::new(1.0, -1.0, 0.0),
-                c: Vector3::new(0.0, 0.0, -1.0),
+            Box::new(Sphere {
+                o: Vector3::new(0.0, 0.0, 0.0),
+                r: 1.0,
                 color: Color::WHITE
-            }).unwrap())
+            })
+        ],
+        lights: vec![
+            Light {
+                pos: Vector3::new(0.0, 0.0, 4.0),
+                intensity: 1.0
+            }
         ]
     };
     
@@ -113,11 +76,11 @@ fn main() -> Result<()> {
         match event {
             Event::MainEventsCleared => {
                 let t = (Instant::now() - start_time).as_seconds_f64();
-                // mutably borrow the scene and update its camera
+                // mutably borrow the scene and update its camera and lighting
                 {
                     let scene = &mut scene;
-                    scene.camera.pos[0] = t.cos() * 8.0;
-                    scene.camera.pos[2] = t.sin() * 8.0;
+                    scene.camera.pos[0] = t.cos() * 4.0;
+                    scene.camera.pos[2] = t.sin() * 4.0;
                     scene.camera.forward[0] = -t.cos();
                     scene.camera.forward[2] = -t.sin();
                 }

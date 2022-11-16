@@ -23,7 +23,7 @@ pub fn rasterize_into<'a, R, I, C>(
         let (x, y) = ((i % width) as f64, (i / height) as f64);
         // the angles associated with those coordinates
         let theta = (x - width_f64 / 2.0) * fov_horiz / width_f64;
-        let phi = (y - height_f64 / 2.0) * fov_vert / height_f64;
+        let phi = -(y - height_f64 / 2.0) * fov_vert / height_f64;
         // copy the calculated color into the buffer
         *pixel = C::from(renderer.cast_ray(theta, phi)?);
         Ok(())

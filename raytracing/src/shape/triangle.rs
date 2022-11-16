@@ -3,7 +3,7 @@ use ::nalgebra::Vector3;
 use crate::Color;
 use crate::shape::Shape;
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(PartialEq)]
 pub struct Triangle {
     pub a: Vector3<f64>,
     pub b: Vector3<f64>,
@@ -12,7 +12,7 @@ pub struct Triangle {
 }
 
 impl Triangle {
-    pub fn normal(&self) -> Vector3<f64> {
+    fn normal(&self) -> Vector3<f64> {
         (self.b - self.a).cross(&(self.c - self.a))
     }
 }
@@ -60,5 +60,9 @@ impl Shape for Triangle {
         } else {
             None
         }
+    }
+
+    fn normal_at(&self, _p: Vector3<f64>) -> Vector3<f64> {
+        self.normal()
     }
 }

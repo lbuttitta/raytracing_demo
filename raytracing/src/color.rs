@@ -1,4 +1,6 @@
-#[derive(Copy, Clone, PartialEq)]
+use std::ops::Mul;
+
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Color {
     pub r: f64,
     pub g: f64,
@@ -31,5 +33,17 @@ impl From<Color> for [u8; 4] {
             (color.b * 256.0) as u8,
             255
         ]
+    }
+}
+
+impl Mul<f64> for Color {
+    type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        Color {
+            r: self.r * rhs,
+            g: self.g * rhs,
+            b: self.b * rhs
+        }
     }
 }

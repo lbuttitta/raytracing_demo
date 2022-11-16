@@ -4,6 +4,7 @@ use crate::Color;
 use crate::shape::Shape;
 use crate::shape::Triangle;
 
+#[derive(PartialEq)]
 pub struct CachingTriangle {
     // the triangle is owned by the container and is immutable
     inner: Triangle,
@@ -15,7 +16,7 @@ pub struct CachingTriangle {
 impl CachingTriangle {
     pub fn new(inner: Triangle) -> Option<CachingTriangle> {
         // the normal vector of the triangle
-        let normal = inner.normal();
+        let normal = (inner.b - inner.a).cross(&(inner.c - inner.a));
         // a transformation matrix from barycentric to Cartesian coordinates
         let mut bary = Matrix3::from_columns(&[
             inner.b - inner.a,
@@ -67,5 +68,9 @@ impl Shape for CachingTriangle {
         } else {
             None
         }
+    }
+
+    fn normal_at(&self, _p: Vector3<f64>) -> Vector3<f64> {
+        self.normal
     }
 }

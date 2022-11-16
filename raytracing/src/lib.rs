@@ -1,3 +1,4 @@
+#![allow(clippy::module_inception)]
 #![feature(never_type)]
 
 pub mod render;
