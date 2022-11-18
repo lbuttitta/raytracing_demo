@@ -47,28 +47,8 @@ fn main() -> Result<()> {
     };
 
     // create a scene and a renderer for it
-    let mut scene = Scene {
-        bg: Color::BLACK,
-        camera: Camera {
-            pos: Vector3::new(0.0, 0.0, 4.0),
-            forward: Vector3::new(0.0, 0.0, -1.0),
-            up:  Vector3::new(0.0, 1.0, 0.0),
-        },
-        shapes: vec![
-            Box::new(Sphere {
-                o: Vector3::new(0.0, 0.0, 0.0),
-                r: 1.0,
-                color: Color::WHITE
-            })
-        ],
-        lights: vec![
-            Light {
-                pos: Vector3::new(0.0, 0.0, 4.0),
-                intensity: 1.0
-            }
-        ]
-    };
-    
+    let mut scene = construct_scene();
+
     let start_time = Instant::now();
 
     event_loop.run(move |event, _, ctrl_flow| {
@@ -77,13 +57,7 @@ fn main() -> Result<()> {
             Event::MainEventsCleared => {
                 let t = (Instant::now() - start_time).as_seconds_f64();
                 // mutably borrow the scene and update its camera and lighting
-                {
-                    let scene = &mut scene;
-                    scene.camera.pos[0] = t.cos() * 4.0;
-                    scene.camera.pos[2] = t.sin() * 4.0;
-                    scene.camera.forward[0] = -t.cos();
-                    scene.camera.forward[2] = -t.sin();
-                }
+                update_scene(&mut scene, t);
                 // create a new renderer for the updated scene
                 let renderer = NaiveRenderer::new(&scene);
                 rasterize_into(
@@ -115,5 +89,62 @@ fn main() -> Result<()> {
             },
             _ => {}
         }
+    });
+}
+
+fn construct_scene() -> Scene {
+    // why is sqrt() not const??
+    let sqrt_3 = 3.0f64.sqrt();
+
+    Scene {
+        background: Color::BLACK,
+        camera: Camera {
+            pos: Vector3::new(0.0, 2.0, 4.0),
+            forward: Vector3::new(0.0, -0.5, -sqrt_3 / 2.0),
+            up: Vector3::new(0.0, sqrt_3 / 2.0, -0.5),
+        },
+        lights: vec![
+            Light {
+                pos: Vector3::new(0.0, 0.0, 0.0),
+                color: Color::WHITE,
+                intensity: 1.0
+            }
+        ],
+        shapes: vec![
+            // the actual positions of the spheres are set on frame 1
+            Box::new(Sphere {
+                o: Vector3::zeros(),
+                r: 0.25,
+                color: Color::RED
+            }),
+            Box::new(Sphere {
+                o: Vector3::zeros(),
+                r: 0.5,
+                color: Color::GREEN
+            }),
+            Box::new(Sphere {
+                o: Vector3::zeros(),
+                r: 1.0,
+                color: Color::BLUE
+            })
+        ]
+    }
+}
+
+fn update_scene(scene: &mut Scene, t: f64) {
+    scene.shapes[0] = Box::new(Sphere {
+        o: Vector3::new(t.cos(), 0.0, t.sin()),
+        r: 0.25,
+        color: Color::RED
+    });
+    scene.shapes[1] = Box::new(Sphere {
+        o: 2.0 * Vector3::new((t / 2.0).cos(), 0.0, (t / 2.0).sin()),
+        r: 0.5,
+        color: Color::GREEN
+    });
+    scene.shapes[2] = Box::new(Sphere {
+        o: 3.0 * Vector3::new((t / 3.0).cos(), 0.0, (t / 3.0).sin()),
+        r: 1.0,
+        color: Color::BLUE
     });
 }

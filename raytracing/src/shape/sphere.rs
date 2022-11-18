@@ -29,9 +29,13 @@ impl Shape for Sphere {
         }
         // the projection of the sphere's center onto the ray
         let p = l0 + d.dot(&l) / l.norm_squared() * l;
-        // the distance from the projection to the intersection
-        let k = (self.r * self.r - (self.o - p).norm_squared()).sqrt();
-        Some(l0 + ((p - l0).norm() - k) * l)
+        // the square of the distance from the projection to the intersection
+        let k2 = self.r * self.r - (self.o - p).norm_squared();
+        if k2 >= 0.0 {
+            Some(p - k2.sqrt() * l)
+        } else {
+            None
+        }
     }
 
     fn normal_at(&self, p: Vector3<f64>) -> Vector3<f64> {

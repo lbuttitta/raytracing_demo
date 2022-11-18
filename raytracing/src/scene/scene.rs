@@ -4,8 +4,8 @@ use crate::scene::Light;
 use crate::shape::Shape;
 
 pub struct Scene {
+    pub background: Color,
     pub camera: Camera,
-    pub bg: Color,
+    pub lights: Vec<Light>,
     pub shapes: Vec<Box<dyn Shape>>,
-    pub lights: Vec<Light>
 }

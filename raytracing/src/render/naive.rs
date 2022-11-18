@@ -25,7 +25,7 @@ impl<'scene> NaiveRenderer<'scene> {
         self.scene.shapes.par_iter()
             // zip shapes with their intersection points
             .map(|s| (s, s.intersect_ray(l0, l)))
-            // remove the ones with no intersection point
+            // remove the shapes with no intersection point
             .filter_map(|(s, p)| p.map(|_| (s, p.unwrap())))
             // select the shape closest to the camera
             .min_by(|(_, p1), (_, p2)| {
@@ -34,6 +34,30 @@ impl<'scene> NaiveRenderer<'scene> {
                 d1.partial_cmp(&d2).unwrap()
             })
             .map(|(s, p)| (s.as_ref(), p))
+    }
+
+    fn light_at(&self, p: Vector3<f64>, n: Vector3<f64>) -> Color {
+        const DELTA: f64 = 1e-12;
+
+        let n_norm = n.norm();
+        self.scene.lights.par_iter()
+            .map(|light| {
+                let d = light.pos - p;
+                let d_norm = d.norm();
+                // if a ray from p towards the camera intersects a shape...
+                if let Some((_, q)) = self.intersect_ray(p + d * DELTA, d) {
+                    // ...and the intersected shape is in front of the camera
+                    if (q - p).norm() < d_norm {
+                        return Color::BLACK;
+                    }
+                }
+                // otherwise, e.g. if that ray extends at least to the camera
+                light.color
+                    * light.intensity
+                    * n.dot(&d).abs() / (d_norm * n_norm)
+            })
+            .sum::<Color>()
+            + self.scene.background
     }
 }
 
@@ -57,30 +81,10 @@ impl<'scene> Renderer for NaiveRenderer<'scene> {
         };
         // if the camera's ray intersects a shape in the scene
         if let Some((s, p)) = self.intersect_ray(camera.pos, forward) {
-            // the total intensity of all light sources visible from p
-            let mut total_intensity = 0.0;
-            let n = s.normal_at(p);
-            let n_norm = n.norm();
-            for light in self.scene.lights.iter() {
-                let d = light.pos - p;
-                let d_norm = d.norm();
-                // if a ray from p + delta intersects a shape in front of light
-                if let Some((_, q)) = self.intersect_ray(p + d * 1e-12, d) {
-                    if (q - p).norm() < d_norm {
-                        continue;
-                    }
-                }
-                /* if the ray doesn't terminate before the light source,
-                 * add to total_intensity the base intensity of the light
-                 * source times the cosine of the angle between n and d */
-                let mut adj_intensity = light.intensity;
-                adj_intensity *= n.dot(&d).abs() / (d_norm * n_norm);
-                total_intensity += adj_intensity;
-            }
-            Ok(s.color_at(p) * total_intensity)
+            Ok(s.color_at(p) * self.light_at(p, s.normal_at(p)))
         } else {
             // if no shape is intersected, return the scene's background color
-            Ok(self.scene.bg)
+            Ok(self.scene.background)
         }
     }
 }
