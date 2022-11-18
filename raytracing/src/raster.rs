@@ -3,9 +3,12 @@ use ::rayon::iter::ParallelIterator;
 use crate::Color;
 use crate::render::Renderer;
 
+/// Uses the algorithm `render` to rasterize the scene it references into the
+/// buffer `buf`, the width and height of which are `width` and `height`
+/// respectively.
 pub fn rasterize_into<'a, R, I, C>(
     renderer: &R,
-    iter: I,
+    buf: I,
     fov_horiz: f64,
     fov_vert: f64,
     width: u32,
@@ -15,7 +18,7 @@ pub fn rasterize_into<'a, R, I, C>(
           I: IndexedParallelIterator<Item = &'a mut C>,
           C: From<Color> + 'a
 {
-    iter.enumerate()
+    buf.enumerate()
         .try_for_each(|(i, pixel)| {
         let i = i as u32;
         let (width_f64, height_f64) = (width as f64, height as f64);

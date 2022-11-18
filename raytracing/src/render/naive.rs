@@ -8,15 +8,25 @@ use crate::render::Renderer;
 use crate::scene::Scene;
 use crate::shape::Shape;
 
+/// My first attempt at writing a rendering algorithm.
 pub struct NaiveRenderer<'scene> {
+
+    /// The scene referenced by this renderer.
     scene: &'scene Scene
+
 }
 
 impl<'scene> NaiveRenderer<'scene> {
+
+    /// Creates a renderer which references `scene`.
     pub fn new(scene: &'scene Scene) -> Self {
         NaiveRenderer { scene }
     }
 
+    /// Returns the first shape intersected by ray originating from `l0` in the
+    /// direction of `l`, as well as the point at which the intersection occurs.
+    ///
+    /// The norm of `l` must be strictly positive (i.e., nonzero).
     fn intersect_ray(
         &self,
         l0: Vector3<f64>,
@@ -36,6 +46,9 @@ impl<'scene> NaiveRenderer<'scene> {
             .map(|(s, p)| (s.as_ref(), p))
     }
 
+    /// Returns the sum of the colors of all light sources in the scene
+    /// referenced by this renderer which are visible from a shape with normal
+    /// vector `n` at `p`.
     fn light_at(&self, p: Vector3<f64>, n: Vector3<f64>) -> Color {
         const DELTA: f64 = 1e-12;
 
@@ -52,18 +65,21 @@ impl<'scene> NaiveRenderer<'scene> {
                     }
                 }
                 // otherwise, e.g. if that ray extends at least to the camera
-                light.color
-                    * light.intensity
-                    * n.dot(&d).abs() / (d_norm * n_norm)
+                light.color * n.dot(&d).abs() / (d_norm * n_norm)
             })
             .sum::<Color>()
             + self.scene.background
     }
+
 }
 
 impl<'scene> Renderer for NaiveRenderer<'scene> {
+
     type CastError = !;
 
+    /// Returns the color visible in the scene referenced by this renderer,
+    /// from the camera in that scene, in the direction (relative to the
+    /// camera) given by `theta` and `phi`.
     fn cast_ray(
         &self,
         theta: f64,

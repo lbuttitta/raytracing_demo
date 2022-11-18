@@ -106,8 +106,7 @@ fn construct_scene() -> Scene {
         lights: vec![
             Light {
                 pos: Vector3::new(0.0, 0.0, 0.0),
-                color: Color::WHITE,
-                intensity: 1.0
+                color: Color::WHITE
             }
         ],
         shapes: vec![
