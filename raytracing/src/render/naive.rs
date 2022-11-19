@@ -9,17 +9,17 @@ use crate::scene::Scene;
 use crate::shape::Shape;
 
 /// My first attempt at writing a rendering algorithm.
-pub struct NaiveRenderer<'scene> {
+pub struct NaiveRenderer<'scene, 'shape> {
 
     /// The scene referenced by this renderer.
-    scene: &'scene Scene
+    scene: &'scene Scene<'shape>
 
 }
 
-impl<'scene> NaiveRenderer<'scene> {
+impl<'scene, 'shape> NaiveRenderer<'scene, 'shape> {
 
     /// Creates a renderer which references `scene`.
-    pub fn new(scene: &'scene Scene) -> Self {
+    pub fn new(scene: &'scene Scene<'shape>) -> Self {
         NaiveRenderer { scene }
     }
 
@@ -73,7 +73,7 @@ impl<'scene> NaiveRenderer<'scene> {
 
 }
 
-impl<'scene> Renderer for NaiveRenderer<'scene> {
+impl Renderer for NaiveRenderer<'_, '_> {
 
     type CastError = !;
 

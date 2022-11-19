@@ -92,7 +92,7 @@ fn main() -> Result<()> {
     });
 }
 
-fn construct_scene() -> Scene {
+fn construct_scene() -> Scene<'static> {
     // why is sqrt() not const??
     let sqrt_3 = 3.0f64.sqrt();
 

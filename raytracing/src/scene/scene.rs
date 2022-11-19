@@ -4,7 +4,7 @@ use crate::scene::Light;
 use crate::shape::Shape;
 
 /// The primary container object which is rendered.
-pub struct Scene {
+pub struct Scene<'shape> {
 
     /// The color of the ambient light in this scene.
     ///
@@ -18,6 +18,6 @@ pub struct Scene {
     pub lights: Vec<Light>,
 
     /// The shapes in this scene.
-    pub shapes: Vec<Box<dyn Shape>>,
+    pub shapes: Vec<Box<dyn Shape + 'shape>>,
 
 }
