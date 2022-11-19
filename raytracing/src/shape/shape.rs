@@ -4,11 +4,32 @@ use crate::Color;
 /// Implemented by objects which can appear in a `Scene`.
 pub trait Shape: Send + Sync {
 
-    /// Returns the color of the implementing shape at `p`.
+    /// Returns the color of the implementing shape at `p` in ambient white
+    /// light.
     ///
     /// Its implementations may require `p` to be a point on the implementing
     /// shape.
-    fn color_at(&self, p: Vector3<f64>) -> Color;
+    fn ambient_color_at(&self, p: Vector3<f64>) -> Color;
+
+    /// Returns the color of the diffuse reflection of white light off of the
+    /// implementing shape at `p`.
+    ///
+    /// Its implementations may require `p` to be a point on the implementing
+    /// shape.
+    fn diffuse_color_at(&self, p: Vector3<f64>) -> Color;
+
+    /// Returns the color of the specular reflection of white light off of the
+    /// implementing shape at `p`.
+    ///
+    /// Its implementations may require `p` to be a point on the implementing
+    /// shape.
+    fn specular_color_at(&self, p: Vector3<f64>) -> Color;
+
+    /// Returns the shininess of the implementing shape at `p`.
+    ///
+    /// Its implementations may require `p` to be a point on the implementing
+    /// shape.
+    fn shininess_at(&self, p: Vector3<f64>) -> f64;
 
     /// Returns the point at which a ray originating from `l0` in the direction
     /// of `l` intersects the implementing shape.

@@ -33,42 +33,15 @@ impl<'scene, 'shape> NaiveRenderer<'scene, 'shape> {
         l: Vector3<f64>
     ) -> Option<(&dyn Shape, Vector3<f64>)> {
         self.scene.shapes.par_iter()
-            // zip shapes with their intersection points
-            .map(|s| (s, s.intersect_ray(l0, l)))
-            // remove the shapes with no intersection point
-            .filter_map(|(s, p)| p.map(|_| (s, p.unwrap())))
+            /* zip shapes with their intersection points and filter out the
+             * ones with no such point */
+            .filter_map(|s| s.intersect_ray(l0, l).map(|p| (s.as_ref(), p)))
             // select the shape closest to the camera
             .min_by(|(_, p1), (_, p2)| {
                 let d1 = (p1 - l0).norm();
                 let d2 = (p2 - l0).norm();
                 d1.partial_cmp(&d2).unwrap()
             })
-            .map(|(s, p)| (s.as_ref(), p))
-    }
-
-    /// Returns the sum of the colors of all light sources in the scene
-    /// referenced by this renderer which are visible from a shape with normal
-    /// vector `n` at `p`.
-    fn light_at(&self, p: Vector3<f64>, n: Vector3<f64>) -> Color {
-        const DELTA: f64 = 1e-12;
-
-        let n_norm = n.norm();
-        self.scene.lights.par_iter()
-            .map(|light| {
-                let d = light.pos - p;
-                let d_norm = d.norm();
-                // if a ray from p towards the camera intersects a shape...
-                if let Some((_, q)) = self.intersect_ray(p + d * DELTA, d) {
-                    // ...and the intersected shape is in front of the camera
-                    if (q - p).norm() < d_norm {
-                        return Color::BLACK;
-                    }
-                }
-                // otherwise, e.g. if that ray extends at least to the camera
-                light.color * n.dot(&d).abs() / (d_norm * n_norm)
-            })
-            .sum::<Color>()
-            + self.scene.background
     }
 
 }
@@ -97,10 +70,60 @@ impl Renderer for NaiveRenderer<'_, '_> {
         };
         // if the camera's ray intersects a shape in the scene
         if let Some((s, p)) = self.intersect_ray(camera.pos, forward) {
-            Ok(s.color_at(p) * self.light_at(p, s.normal_at(p)))
+            // a vector normal to the shape at the intersection point
+            let n = s.normal_at(p);
+            let n_norm = n.norm();
+            // the displacement from p to the camera
+            let dc = camera.pos - p;
+            let dc_norm = dc.norm();
+            // the shininess of the shape at the intersection point
+            let h = s.shininess_at(p);
+
+            let lights = self.scene.lights.par_iter()
+                /* filter out the lights such that a ray from p to it is
+                 * intersected by a shape in front of it */
+                .filter(|light| {
+                    // the displacement from p to the light source
+                    let dl = light.pos - p;
+                    /* returns true if the ray has no intersection point or if
+                     * the point is farther from p than the light source */
+                    self.intersect_ray(p + dl * 1.0e-12, dl)
+                        .map_or(true, |(_, q)| (p - q).norm() > dl.norm())
+                });
+            let tot_ambient = self.scene.ambient_color * s.ambient_color_at(p);
+            // the incoming light to be reflected
+            let (sum_diffuse, sum_specular) = lights.map(|light| {
+                // the displacement from p to the light source
+                let dl = light.pos - p;
+                // the diffuse reflection from the light source
+                let diffuse = light.diffuse_color
+                    * dl.dot(&n) / (n_norm * dl.norm());
+                // the reflection of dl across n
+                let r = 2.0 * dl.dot(&n).abs() / (dl.norm() * n_norm) * n - dl;
+                // the specular reflection from the light source
+                let specular = light.specular_color
+                    * (r.dot(&dc).abs() / (r.norm() * dc_norm)).powf(h);
+                (diffuse, specular)
+            })
+            .reduce(
+                || (Color::BLACK, Color::BLACK),
+                |(sum_diffuse, sum_specular), (diffuse, specular)| {
+                    (
+                        sum_diffuse + diffuse,
+                        if diffuse != Color::BLACK {
+                            sum_specular + specular
+                        } else {
+                            sum_specular
+                        }
+                    )
+                }
+            );
+            let tot_diffuse = s.diffuse_color_at(p) * sum_diffuse;
+            let tot_specular = s.specular_color_at(p) * sum_specular;
+            Ok(tot_ambient + tot_diffuse + tot_specular)
         } else {
             // if no shape is intersected, return the scene's background color
-            Ok(self.scene.background)
+            Ok(self.scene.background_color)
         }
     }
 }

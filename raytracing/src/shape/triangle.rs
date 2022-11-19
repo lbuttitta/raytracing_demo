@@ -16,8 +16,18 @@ pub struct Triangle {
     /// The third vertex of this triangle.
     pub c: Vector3<f64>,
 
-    /// The color of this triangle.
-    pub color: Color
+    /// The color of this triangle in ambient white light.
+    pub ambient_color: Color,
+
+    /// The color of the diffuse reflection of white light off of this triangle.
+    pub diffuse_color: Color,
+
+    /// The color of the specular reflection of white light off of this
+    /// triangle.
+    pub specular_color: Color,
+
+    /// The shininess of this sphere.
+    pub shininess: f64
 
 }
 
@@ -32,11 +42,26 @@ impl Triangle {
 
 impl Shape for Triangle {
 
-    /// Returns the color of this triangle at `p`.
-    ///
-    /// `p` must be a point on this triangle.
-    fn color_at(&self, _p: Vector3<f64>) -> Color {
-        self.color
+    /// Returns the color of this triangle at `p` in ambient white light.
+    fn ambient_color_at(&self, _p: Vector3<f64>) -> Color {
+        self.ambient_color
+    }
+
+    /// Returns the color of the diffuse reflection of white light off of this
+    /// triangle at `p`.
+    fn diffuse_color_at(&self, _p: Vector3<f64>) -> Color {
+        self.diffuse_color
+    }
+
+    /// Returns the color of the specular reflection of white light off of this
+    /// triangle at `p`.
+    fn specular_color_at(&self, _p: Vector3<f64>) -> Color {
+        self.specular_color
+    }
+
+    /// Returns the shininess of this triangle at `p`.
+    fn shininess_at(&self, _p: Vector3<f64>) -> f64 {
+        self.shininess
     }
 
     /// Returns the point at which a ray originating from `l0` in the direction

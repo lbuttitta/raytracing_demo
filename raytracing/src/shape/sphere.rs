@@ -12,18 +12,42 @@ pub struct Sphere {
     /// The radius of this sphere.
     pub r: f64,
 
-    /// The color of this sphere.
-    pub color: Color
+    /// The color of this sphere in ambient white light.
+    pub ambient_color: Color,
+
+    /// The color of the diffuse reflection of white light off of this sphere.
+    pub diffuse_color: Color,
+
+    /// The color of the specular reflection of white light off of this sphere.
+    pub specular_color: Color,
+
+    /// The shininess of this sphere.
+    pub shininess: f64
 
 }
 
 impl Shape for Sphere {
 
-    /// Returns the color of this sphere at `p`.
-    ///
-    /// `p` must be a point on this sphere.
-    fn color_at(&self, _p: Vector3<f64>) -> Color {
-        self.color
+    /// Returns the color of this sphere at `p` in ambient white light.
+    fn ambient_color_at(&self, _p: Vector3<f64>) -> Color {
+        self.ambient_color
+    }
+
+    /// Returns the color of the diffuse reflection of white light off of this
+    /// sphere at `p`.
+    fn diffuse_color_at(&self, _p: Vector3<f64>) -> Color {
+        self.diffuse_color
+    }
+
+    /// Returns the color of the specular reflection of white light off of this
+    /// sphere at `p`.
+    fn specular_color_at(&self, _p: Vector3<f64>) -> Color {
+        self.specular_color
+    }
+
+    /// Returns the shininess of this sphere at `p`.
+    fn shininess_at(&self, _p: Vector3<f64>) -> f64 {
+        self.shininess
     }
 
     /// Returns the point at which a ray originating from `l0` in the direction
@@ -55,8 +79,6 @@ impl Shape for Sphere {
     }
 
     /// Returns a vector normal to this sphere at `p`.
-    ///
-    /// `p` must be a point on this sphere.
     fn normal_at(&self, p: Vector3<f64>) -> Vector3<f64> {
         p - self.o
     }

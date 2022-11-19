@@ -93,57 +93,50 @@ fn main() -> Result<()> {
 }
 
 fn construct_scene() -> Scene<'static> {
-    // why is sqrt() not const??
-    let sqrt_3 = 3.0f64.sqrt();
-
     Scene {
-        background: Color::BLACK,
+        background_color: Color::BLACK,
+        ambient_color: Color::WHITE * 0.05,
         camera: Camera {
-            pos: Vector3::new(0.0, 2.0, 4.0),
-            forward: Vector3::new(0.0, -0.5, -sqrt_3 / 2.0),
-            up: Vector3::new(0.0, sqrt_3 / 2.0, -0.5),
+            pos: Vector3::new(-5.0, 2.5, 0.0),
+            forward: Vector3::new(3.0f64.sqrt() / 2.0, -0.5, 0.0),
+            up: Vector3::new(0.5, 3.0f64.sqrt() / 2.0, 0.0),
         },
         lights: vec![
             Light {
                 pos: Vector3::new(0.0, 0.0, 0.0),
-                color: Color::WHITE
+                diffuse_color: Color::WHITE,
+                specular_color: Color::WHITE * 0.5
             }
         ],
-        shapes: vec![
-            // the actual positions of the spheres are set on frame 1
-            Box::new(Sphere {
-                o: Vector3::zeros(),
-                r: 0.25,
-                color: Color::RED
-            }),
-            Box::new(Sphere {
-                o: Vector3::zeros(),
-                r: 0.5,
-                color: Color::GREEN
-            }),
-            Box::new(Sphere {
-                o: Vector3::zeros(),
-                r: 1.0,
-                color: Color::BLUE
-            })
-        ]
+        shapes: vec![]
     }
 }
 
 fn update_scene(scene: &mut Scene, t: f64) {
-    scene.shapes[0] = Box::new(Sphere {
-        o: Vector3::new(t.cos(), 0.0, t.sin()),
-        r: 0.25,
-        color: Color::RED
-    });
-    scene.shapes[1] = Box::new(Sphere {
-        o: 2.0 * Vector3::new((t / 2.0).cos(), 0.0, (t / 2.0).sin()),
-        r: 0.5,
-        color: Color::GREEN
-    });
-    scene.shapes[2] = Box::new(Sphere {
-        o: 3.0 * Vector3::new((t / 3.0).cos(), 0.0, (t / 3.0).sin()),
-        r: 1.0,
-        color: Color::BLUE
-    });
+    scene.shapes = vec![
+        Box::new(Sphere {
+            o: Vector3::new(t.cos(), 0.0, t.sin()),
+            r: 0.25,
+            ambient_color: Color::RED,
+            diffuse_color: Color::RED,
+            specular_color: Color::RED,
+            shininess: 2.0
+        }),
+        Box::new(Sphere {
+            o: 2.0 * Vector3::new((t / 2.0).cos(), 0.0, (t / 2.0).sin()),
+            r: 0.5,
+            ambient_color: Color::GREEN,
+            diffuse_color: Color::GREEN,
+            specular_color: Color::GREEN,
+            shininess: 2.0
+        }),
+        Box::new(Sphere {
+            o: 3.0 * Vector3::new((t / 3.0).cos(), 0.0, (t / 3.0).sin()),
+            r: 1.0,
+            ambient_color: Color::BLUE,
+            diffuse_color: Color::BLUE,
+            specular_color: Color::BLUE,
+            shininess: 2.0
+        })
+    ];
 }

@@ -6,10 +6,11 @@ use crate::shape::Shape;
 /// The primary container object which is rendered.
 pub struct Scene<'shape> {
 
+    /// The color of the background in this scene.
+    pub background_color: Color,
+
     /// The color of the ambient light in this scene.
-    ///
-    /// The magnitude of the color yields the intensity of the light.
-    pub background: Color,
+    pub ambient_color: Color,
 
     /// The camera in this scene.
     pub camera: Camera,
