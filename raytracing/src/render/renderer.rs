@@ -12,4 +12,5 @@ pub trait Renderer: Sized {
         theta: f64,
         phi: f64
     ) -> Result<Color, Self::CastError>;
+
 }

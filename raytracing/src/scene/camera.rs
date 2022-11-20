@@ -15,6 +15,7 @@ pub struct Camera {
     ///
     /// Rotation around this vector causes the camera to yaw.
     pub up: Vector3<f64>
+
 }
 
 impl Camera {

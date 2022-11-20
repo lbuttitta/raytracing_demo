@@ -126,4 +126,5 @@ impl Renderer for NaiveRenderer<'_, '_> {
             Ok(self.scene.background_color)
         }
     }
+
 }

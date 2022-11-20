@@ -114,4 +114,5 @@ impl Shape for Triangle {
     fn normal_at(&self, _p: Vector3<f64>) -> Vector3<f64> {
         self.normal()
     }
+
 }
